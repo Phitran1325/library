@@ -1,0 +1,311 @@
+import { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  IconButton,
+  Paper,
+  Stack,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import type { AxiosError } from 'axios';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  getPublishers,
+  createPublisher,
+  updatePublisher,
+  deletePublisher,
+} from '@/services/admin.api';
+
+type Publisher = {
+  _id: string;
+  name: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  isActive?: boolean;
+  bookCount?: number;
+};
+
+export default function PublisherManager() {
+  const [publishers, setPublishers] = useState<Publisher[]>([]);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Publisher | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    isActive: true,
+  });
+  const { token } = useAuth();
+
+  const load = async () => {
+    if (!token) {
+      console.log('[PublisherManager] No token available, skipping load');
+      return;
+    }
+    try {
+      setLoading(true);
+      console.log('[PublisherManager] Loading with token:', token?.substring(0, 20) + '...');
+      const res = await getPublishers(token);
+      const data = res.data?.data;
+      if (data) {
+        setPublishers(data.publishers ?? []);
+      } else {
+        setPublishers([]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [token]);
+
+  const resetForm = () => {
+    setForm({
+      name: '',
+      description: '',
+      address: '',
+      phone: '',
+      email: '',
+      website: '',
+      isActive: true,
+    });
+  };
+
+  const onOpenCreate = () => {
+    resetForm();
+    setEditing(null);
+    setOpen(true);
+  };
+
+  const onOpenEdit = (publisher: Publisher) => {
+    setEditing(publisher);
+    setForm({
+      name: publisher.name,
+      description: publisher.description ?? '',
+      address: publisher.address ?? '',
+      phone: publisher.phone ?? '',
+      email: publisher.email ?? '',
+      website: publisher.website ?? '',
+      isActive: publisher.isActive ?? true,
+    });
+    setOpen(true);
+  };
+
+  const onSave = async () => {
+    if (!form.name.trim()) {
+      alert('Name is required');
+      return;
+    }
+
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim() || undefined,
+      address: form.address.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      email: form.email.trim() || undefined,
+      website: form.website.trim() || undefined,
+      isActive: form.isActive,
+    };
+
+    try {
+      if (editing) {
+        await updatePublisher(editing._id, payload, token ?? undefined);
+      } else {
+        await createPublisher(payload, token ?? undefined);
+      }
+      setOpen(false);
+      await load();
+    } catch (err) {
+      console.error(err);
+      const message =
+        (err as AxiosError<{ message?: string; errors?: string[] }>).response?.data?.message ||
+        'Save failed';
+      alert(message);
+    }
+  };
+
+  const onDelete = async (id: string) => {
+    if (!window.confirm('Confirm delete?')) return;
+    try {
+      await deletePublisher(id, token ?? undefined);
+      await load();
+    } catch (err) {
+      console.error(err);
+      const message =
+        (err as AxiosError<{ message?: string }>).response?.data?.message || 'Delete failed';
+      alert(message);
+    }
+  };
+
+  return (
+    <Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Stack direction="column" spacing={0}>
+          <h2>Publishers</h2>
+          <span style={{ color: '#6b7280', fontSize: 13 }}>Quản lý nhà xuất bản và trạng thái</span>
+        </Stack>
+        <Button variant="contained" onClick={onOpenCreate}>Add publisher</Button>
+      </Box>
+
+      <Paper>
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" py={6}>
+            <CircularProgress size={28} />
+          </Box>
+        ) : (
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Website</TableCell>
+                <TableCell>Books</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {publishers.map((publisher) => (
+                <TableRow key={publisher._id}>
+                  <TableCell>
+                    <Stack spacing={0.5}>
+                      <span>{publisher.name}</span>
+                      {publisher.address && (
+                        <span style={{ color: '#6b7280', fontSize: 12 }}>{publisher.address}</span>
+                      )}
+                    </Stack>
+                  </TableCell>
+                  <TableCell>{publisher.description}</TableCell>
+                  <TableCell>
+                    <Stack spacing={0.5}>
+                      <span>{publisher.phone ?? '—'}</span>
+                      <span>{publisher.email ?? '—'}</span>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    {publisher.website ? (
+                      <a href={publisher.website} target="_blank" rel="noreferrer">
+                        {publisher.website}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                  <TableCell>{publisher.bookCount ?? 0}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={publisher.isActive ? 'Active' : 'Inactive'}
+                      color={publisher.isActive ? 'success' : 'default'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title="Edit">
+                      <IconButton onClick={() => onOpenEdit(publisher)}><EditIcon /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton onClick={() => onDelete(publisher._id)}><DeleteIcon /></IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Paper>
+
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{editing ? 'Edit publisher' : 'Create publisher'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            margin="normal"
+            multiline
+            minRows={2}
+          />
+          <TextField
+            fullWidth
+            label="Address"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Phone"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            margin="normal"
+            type="email"
+          />
+          <TextField
+            fullWidth
+            label="Website"
+            value={form.website}
+            onChange={(e) => setForm({ ...form, website: e.target.value })}
+            margin="normal"
+            placeholder="https://example.com"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.isActive}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+              />
+            }
+            label="Active"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={onSave}>Save</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}

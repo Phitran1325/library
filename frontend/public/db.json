@@ -1,0 +1,48 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@gmail.com",
+      "password": "Admin@123",
+      "fullName": "Admin Librarian",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "username": "reader1",
+      "email": "reader1@gmail.com",
+      "password": "Reader@123",
+      "fullName": "Nguyen Van A",
+      "role": "reader"
+    },
+    {
+      "id": "023a",
+      "fullName": "sonnp",
+      "email": "anhtuankr9122004@gmail.com",
+      "password": "Atuna@123",
+      "role": "user"
+    },
+    {
+      "id": "6b1a",
+      "fullName": "tuanq124",
+      "email": "anh9122004@gmail.com",
+      "password": "Atuna@123",
+      "role": "user"
+    }
+  ],
+  "books": [
+    {
+      "id": 1,
+      "title": "Sword Art Online Progressive Vol 1",
+      "price": "120.000 ₫",
+      "image": "https://example.com/book1.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Tokyo Revenger Tập 4",
+      "price": "115.000 ₫",
+      "image": "https://example.com/book2.jpg"
+    }
+  ]
+}

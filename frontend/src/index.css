@@ -1,0 +1,496 @@
+/* src/styles/index.css */
+/* CSS root variables và global styles */ /* index.css */
+
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+@import "tailwindcss/theme";
+
+:root {
+  /* Primary colors */
+  --color-primary: #2e6ba8;
+  --color-primary-dark: #1e4d7f;
+  --color-primary-light: #4a8fd8;
+
+  /* Secondary colors */
+  --color-secondary: #f5f5f5;
+  --color-secondary-dark: #e0e0e0;
+
+  /* Text colors */
+  --color-text: #333333;
+  --color-text-light: #666666;
+  --color-text-dark: #000000;
+
+  /* Background colors */
+  --color-white: #ffffff;
+  --color-background: #f5f5f5;
+  --color-background-dark: #e8e8e8;
+
+  /* Accent colors */
+  --color-accent: #ff6b6b;
+  --color-success: #4caf50;
+  --color-warning: #ffc107;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+
+  /* Border colors */
+  --color-border: #e0e0e0;
+  --color-border-light: #f0f0f0;
+  --color-border-dark: #cccccc;
+
+  /* Shadow */
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Font sizes */
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-md: 1rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 1.875rem;
+  --font-4xl: 2rem;
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+
+  /* Z-index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* Breakpoints */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+@theme {
+  --color-primary: #243c5a; /* Define primary color for Tailwind utilities */
+  --color-primary-dark: #1a2b3f;
+  --color-primary-light: #3f5e8a;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-dark);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-light);
+}
+
+/* Admin / global UI polish: headings, subtitles, inputs, buttons, tables */
+h1, h2, h3, h4 {
+  color: var(--color-text-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+h2 {
+  font-size: var(--font-2xl);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle,
+span[style*="color: '#6b7280'"] {
+  color: #6b7280;
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+/* Slightly larger form controls with rounded corners and subtle shadow */
+.MuiInputBase-root, .MuiOutlinedInput-root {
+  border-radius: 10px;
+  background: var(--color-white);
+  font-size: var(--font-sm);
+}
+
+.MuiInputBase-input {
+  padding: 10px 12px;
+}
+
+.MuiButton-root {
+  text-transform: none;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.MuiButton-contained {
+  box-shadow: none;
+}
+
+/* Make primary contained buttons slightly blue to match the sidebar sample */
+.MuiButton-containedPrimary, .MuiButton-contained[style*="backgroundColor: '#2563EB'"] {
+  background-color: #2563EB !important;
+  color: #fff !important;
+}
+
+/* Paper and table spacing */
+.MuiPaper-root {
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.MuiTableCell-root {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+/* Chips and avatars subtle sizing */
+.MuiChip-root {
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Dialog action buttons spacing */
+.MuiDialogActions-root .MuiButton-root {
+  min-width: 96px;
+}
+
+/* Small helper: admin container to scope changes if needed */
+.admin-page {
+  --header-font-size: var(--font-2xl);
+}
+
+/* Sidebar visuals */
+.admin-sidebar, .librarian-sidebar {
+  background: linear-gradient(180deg, #0f2a3a 0%, #15394f 100%);
+  color: #fff;
+  border-right: 1px solid rgba(255,255,255,0.04);
+}
+
+.admin-sidebar .p-4, .librarian-sidebar .p-4 {
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+}
+
+/* Ensure sidebar headers are readable (white) */
+.admin-sidebar .p-4 h2,
+.librarian-sidebar .p-4 h2 {
+  color: #ffffff !important;
+}
+
+.admin-sidebar nav a, .librarian-sidebar nav a {
+  align-items: center;
+}
+
+.admin-sidebar nav a svg, .librarian-sidebar nav a svg {
+  background: rgba(255,255,255,0.06);
+  padding: 6px;
+  border-radius: 8px;
+  margin-right: 8px;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.admin-sidebar nav a:hover svg, .librarian-sidebar nav a:hover svg {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.12);
+}
+
+.admin-sidebar nav a.active, .librarian-sidebar nav a.active {
+  background: linear-gradient(90deg, rgba(37,99,235,0.08), rgba(118,75,162,0.04));
+  border-right-color: rgba(99,102,241,0.9) !important;
+}
+
+.admin-sidebar nav a.active svg, .librarian-sidebar nav a.active svg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 6px 18px rgba(102,126,234,0.18);
+}
+
+/* Improve main header cards and titles */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-header h2 {
+  margin: 0;
+}
+
+/* Table row hover */
+.MuiTableRow-root:hover {
+  background: rgba(15, 36, 58, 0.04);
+}
+
+/* Card / Paper */
+.MuiPaper-root {
+  transition: box-shadow var(--transition-normal), transform var(--transition-fast);
+}
+.MuiPaper-root:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Nice subtle accent for primary actions */
+.btn-primary-gradient {
+  background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(102,126,234,0.12);
+}
+
+/* Small responsive tweaks */
+@media (max-width: 768px) {
+  .admin-sidebar, .librarian-sidebar { display: none; }
+}
+
+/* Increase sidebar widths and scale icons/text for better readability
+   NOTE: keep these aligned with Tailwind's ml-64 / ml-16 (16rem / 4rem)
+   so the main content margin classes applied in layout match the
+   actual sidebar widths and avoid visual overlap. */
+.admin-sidebar.w-64, .librarian-sidebar.w-64 {
+  width: 256px !important; /* Tailwind ml-64 == 16rem == 256px */
+}
+.admin-sidebar.w-16, .librarian-sidebar.w-16 {
+  width: 64px !important; /* Tailwind ml-16 == 4rem == 64px */
+}
+
+.admin-sidebar nav a, .librarian-sidebar nav a {
+  padding: 14px 18px; /* more clickable area */
+}
+
+.admin-sidebar nav a span, .librarian-sidebar nav a span {
+  font-size: 1rem; /* 16px for legibility */
+}
+
+.admin-sidebar nav a svg, .librarian-sidebar nav a svg {
+  width: 32px; /* larger icons */
+  height: 32px;
+  padding: 10px;
+}
+
+.admin-sidebar .p-4 h2, .librarian-sidebar .p-4 h2 {
+  font-size: 1.125rem; /* slightly larger header */
+}
+
+/* Ensure active indicator remains visible with new widths */
+.admin-sidebar nav a.active, .librarian-sidebar nav a.active {
+  border-right-width: 6px !important;
+}
+
+/* Page layout and cards */
+.app-shell {
+  display: flex;
+}
+
+.content {
+  /* Keep content offset aligned with sidebar width (256px when expanded).
+     This avoids the two areas touching and keeps spacing consistent. */
+  margin-left: 256px; /* space for expanded sidebar (matches Tailwind ml-64) */
+  padding: 28px 36px;
+  max-width: 1280px;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .content { margin-left: 64px; padding: 20px; }
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  font-size: 1.625rem; /* 26px */
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* Filter bar (search + controls) styled as a card */
+.filter-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 8px 20px rgba(16,24,40,0.06);
+  margin-bottom: 18px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Ensure Stack inside filter-card aligns items vertically */
+.filter-card .MuiStack-root {
+  align-items: center !important;
+}
+
+.filter-card .MuiTextField-root { flex: 1; }
+.filter-actions { display: flex; gap: 10px; }
+
+/* Rounded inputs/buttons inside filter-card and header controls */
+.filter-card .MuiOutlinedInput-root,
+.filter-card .MuiInputBase-root,
+.filter-card .MuiSelect-root,
+.filter-card .MuiFormControl-root {
+  border-radius: 10px;
+}
+
+.filter-card .MuiButton-root {
+  border-radius: 10px;
+}
+
+/* Toggle buttons (header period buttons) rounded and slightly lifted */
+.MuiToggleButton-root {
+  border-radius: 8px;
+  text-transform: none;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.MuiToggleButton-root.Mui-selected {
+  border-radius: 8px;
+}
+
+/* Slight spacing for grouped toggle buttons */
+.MuiToggleButtonGroup-root .MuiToggleButton-root:not(:first-of-type) {
+  margin-left: 6px;
+}
+
+/* Make filter inputs and buttons uniform height and spacing */
+.filter-card .MuiOutlinedInput-root,
+.filter-card .MuiInputBase-root,
+.filter-card .MuiSelect-root,
+.filter-card .MuiButton-root {
+  height: 48px !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.filter-card .MuiOutlinedInput-root .MuiOutlinedInput-input,
+.filter-card .MuiInputBase-root .MuiInputBase-input {
+  padding: 12px 14px !important;
+  height: auto !important;
+}
+
+.filter-card .MuiFormControl-root {
+  min-width: 160px;
+}
+
+.filter-card .MuiSelect-root .MuiSelect-select {
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Buttons: consistent height, rounded and vertical alignment */
+.filter-card .MuiButton-root {
+  border-radius: 10px;
+  padding: 10px 18px !important;
+  box-shadow: 0 4px 12px rgba(16,24,40,0.06);
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 48px !important;
+  min-height: 48px !important;
+}
+
+.filter-card .MuiButton-containedPrimary {
+  background: linear-gradient(135deg,#2563EB 0%,#3b82f6 100%) !important;
+  color: #fff !important;
+}
+
+/* Secondary button style (outline) */
+.filter-card .MuiButton-outlined {
+  border-radius: 10px;
+}
+
+/* Table container card */
+.table-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+}
+
+.table-card .MuiTable-root { border-collapse: separate; border-spacing: 0 8px; }
+.table-card .MuiTableRow-root { background: #fff; border-radius: 8px; }
+.table-card .MuiTableCell-root { border-bottom: none; }
+.table-card .MuiTableHead-root .MuiTableCell-root { background: transparent; color: #374151; font-weight: 600; }
+
+/* Zebra banding with subtle color */
+.table-card .MuiTableRow-root:nth-of-type(odd) { background: #ffffff; }
+.table-card .MuiTableRow-root:nth-of-type(even) { background: #fbfbfd; }
+
+/* Primary action helper class */
+.btn-primary-gradient, .filter-card .MuiButton-contained[style*="backgroundColor: '#2563EB'"] {
+  background: linear-gradient(135deg,#2563EB 0%,#3b82f6 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.12);
+}
+
+/* Reduce table divider prominence */
+.MuiTableCell-root { border-bottom: 1px solid rgba(15,23,42,0.04); }
+
+/* Dialogs and forms consistent spacing */
+.MuiDialogContent-root { padding-top: 18px !important; }
+

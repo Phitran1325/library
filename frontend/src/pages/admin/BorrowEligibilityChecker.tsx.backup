@@ -1,0 +1,296 @@
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
+import axios, { type AxiosError } from 'axios';
+import { useAuth } from '@/contexts/AuthContext';
+
+type BorrowValidationResponse = {
+  isValid: boolean;
+  errors: string[];
+};
+
+type BorrowRow = {
+  _id: string;
+  status: string;
+  borrowDate: string;
+  dueDate: string;
+  returnDate?: string;
+  lateFee?: number;
+  damageFee?: number;
+  book?: {
+    title: string;
+    isbn?: string;
+  };
+  user?: {
+    fullName?: string;
+    email?: string;
+  };
+};
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+
+const formatDateTime = (value?: string) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+};
+
+export default function BorrowEligibilityChecker() {
+  const { token, userRole } = useAuth();
+  const [bookId, setBookId] = useState('');
+  const [targetUserId, setTargetUserId] = useState('');
+  const [validation, setValidation] = useState<BorrowValidationResponse | null>(null);
+  const [validating, setValidating] = useState(false);
+  const [borrowList, setBorrowList] = useState<BorrowRow[]>([]);
+  const [loadingBorrows, setLoadingBorrows] = useState(false);
+  const [borrowError, setBorrowError] = useState<string | null>(null);
+
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const loadBorrows = async () => {
+    try {
+      setLoadingBorrows(true);
+      setBorrowError(null);
+      const res = await axios.get(`${API_BASE_URL}/borrows`, {
+        headers: authHeaders,
+        params: {
+          limit: 10,
+        },
+      });
+      const data = res.data?.data;
+      if (data?.borrows) {
+        setBorrowList(data.borrows);
+      } else {
+        setBorrowList([]);
+      }
+    } catch (err) {
+      console.error(err);
+      const message =
+        (err as AxiosError<{ message?: string }>).response?.data?.message ||
+        'Không thể tải danh sách phiếu mượn';
+      setBorrowError(message);
+    } finally {
+      setLoadingBorrows(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBorrows();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onValidate = async () => {
+    if (!bookId.trim()) {
+      alert('Vui lòng nhập bookId');
+      return;
+    }
+    try {
+      setValidating(true);
+      setValidation(null);
+
+      const payload: Record<string, string> = { bookId: bookId.trim() };
+      if (targetUserId.trim()) {
+        payload.userId = targetUserId.trim();
+      }
+
+      const res = await axios.post(`${API_BASE_URL}/borrows/validate`, payload, {
+        headers: authHeaders,
+      });
+      const responseData = res.data?.data ?? res.data;
+      if (responseData) {
+        setValidation({
+          isValid: Boolean(responseData.isValid),
+          errors: responseData.errors ?? [],
+        });
+      } else {
+        setValidation({
+          isValid: res.data?.success ?? true,
+          errors: res.data?.errors ?? [],
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      const message =
+        (err as AxiosError<{ message?: string; errors?: string[] }>).response?.data?.message ||
+        'Không thể kiểm tra điều kiện mượn';
+      const errors =
+        (err as AxiosError<{ errors?: string[] }>).response?.data?.errors ?? [message];
+      setValidation({
+        isValid: false,
+        errors,
+      });
+    } finally {
+      setValidating(false);
+      loadBorrows();
+    }
+  };
+
+  const canCheckOtherUser = userRole === 'admin' || userRole === 'librarian';
+
+  return (
+    <Box>
+      <Typography variant="h5" component="h1" gutterBottom>
+        Kiểm tra điều kiện mượn sách
+      </Typography>
+      <Typography variant="body2" color="text.secondary" mb={3}>
+        Nhập ID sách và (tuỳ chọn) ID độc giả để hệ thống thực hiện toàn bộ bước kiểm tra: hạn mức,
+        gói thành viên, nợ phạt, trạng thái sách và quyền Premium. Kết quả phản hồi rõ ràng giúp
+        bạn xử lý ngay các vấn đề phát sinh.
+      </Typography>
+
+      <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box sx={{ flex: 1 }}>
+          <Card variant="outlined">
+            <CardContent>
+              <Stack spacing={2}>
+                <TextField
+                  label="Book ID"
+                  value={bookId}
+                  onChange={(e) => setBookId(e.target.value)}
+                  required
+                  fullWidth
+                  placeholder="Ví dụ: 662d2d..."
+                />
+                <TextField
+                  label="User ID (tuỳ chọn)"
+                  value={targetUserId}
+                  onChange={(e) => setTargetUserId(e.target.value)}
+                  disabled={!canCheckOtherUser}
+                  helperText={canCheckOtherUser ? 'Để trống nếu muốn kiểm tra cho chính bạn' : 'Chỉ admin/thủ thư mới có thể kiểm tra cho người khác'}
+                  fullWidth
+                />
+                <Button variant="contained" onClick={onValidate} disabled={validating}>
+                  {validating ? 'Đang kiểm tra…' : 'Kiểm tra điều kiện mượn'}
+                </Button>
+                {validation && (
+                  <Alert severity={validation.isValid ? 'success' : 'error'}>
+                    {validation.isValid
+                      ? 'Đủ điều kiện mượn. Bạn có thể tiến hành tạo phiếu mượn.'
+                      : (
+                        <Stack spacing={1}>
+                          <span>Không đáp ứng điều kiện mượn:</span>
+                          <ul style={{ margin: 0, paddingLeft: 20 }}>
+                            {validation.errors.map((error) => (
+                              <li key={error}>{error}</li>
+                            ))}
+                          </ul>
+                        </Stack>
+                      )
+                    }
+                  </Alert>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Box>
+
+        <Box sx={{ flex: 1 }}>
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="subtitle1" gutterBottom>
+                Tự động hoá sau khi mượn/trả
+              </Typography>
+              <Stack spacing={1.5} color="text.secondary">
+                <Typography variant="body2">
+                  • Cron hàng ngày tính phí trễ hạn, gửi email nhắc và cập nhật trạng thái phiếu mượn.
+                </Typography>
+                <Typography variant="body2">
+                  • Khi trả, hệ thống tự đổi trạng thái bản sao sách (Available, Borrowed, Damaged, Lost) và cập nhật kho.
+                </Typography>
+                <Typography variant="body2">
+                  • Đặt trước sẽ được xử lý tự động: nếu đủ điều kiện, reservation chuyển sang phiếu mượn và email gửi tới độc giả.
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
+
+      <Box mt={4}>
+
+        <Paper>
+          <Box display="flex" justifyContent="space-between" alignItems="center" px={3} py={2}>
+            <Typography variant="h6">Phiếu mượn gần nhất</Typography>
+            <Button variant="text" onClick={loadBorrows} disabled={loadingBorrows}>
+              Làm mới
+            </Button>
+          </Box>
+          {loadingBorrows ? (
+            <Box display="flex" justifyContent="center" alignItems="center" py={6}>
+              <CircularProgress size={28} />
+            </Box>
+          ) : borrowError ? (
+            <Alert severity="error" sx={{ mx: 3, mb: 3 }}>{borrowError}</Alert>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Độc giả</TableCell>
+                  <TableCell>Sách</TableCell>
+                  <TableCell>Ngày mượn</TableCell>
+                  <TableCell>Hạn trả</TableCell>
+                  <TableCell>Trả</TableCell>
+                  <TableCell>Trạng thái</TableCell>
+                  <TableCell>Phí</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {borrowList.map((borrow) => {
+                  const isOverdue = borrow.status === 'Overdue';
+                  const statusColor =
+                    borrow.status === 'Borrowed'
+                      ? 'primary'
+                      : borrow.status === 'Overdue'
+                        ? 'error'
+                        : borrow.status === 'Returned'
+                          ? 'success'
+                          : 'default';
+                  return (
+                    <TableRow key={borrow._id} sx={isOverdue ? { backgroundColor: 'rgba(255,0,0,0.05)' } : undefined}>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <span>{borrow.user?.fullName ?? '—'}</span>
+                          <span style={{ color: '#6b7280', fontSize: 12 }}>{borrow.user?.email ?? '—'}</span>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{borrow.book?.title ?? '—'}</TableCell>
+                      <TableCell>{formatDateTime(borrow.borrowDate)}</TableCell>
+                      <TableCell>{formatDateTime(borrow.dueDate)}</TableCell>
+                      <TableCell>{formatDateTime(borrow.returnDate)}</TableCell>
+                      <TableCell>
+                        <Chip label={borrow.status} color={statusColor as any} size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <span>Trễ: {borrow.lateFee ?? 0}</span>
+                          <span>Hư hỏng: {borrow.damageFee ?? 0}</span>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </Paper>
+      </Box>
+    </Box>
+  );
+}
